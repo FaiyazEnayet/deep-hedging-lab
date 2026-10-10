@@ -1,0 +1,38 @@
+name: heston_call
+seed: 1
+
+market:
+  name: heston
+  params:
+    S0: 100.0
+    r: 0.02
+    v0: 0.0625     # 25% spot vol
+    kappa: 2.0
+    theta: 0.0625
+    xi: 0.3
+    rho: -0.6
+    T: 0.25
+
+derivative:
+  name: european_call
+  params:
+    K: 100.0
+
+hedge:
+  n_steps: 30
+  T: 0.25
+  cost_rate: 0.002
+  baseline_sigma: 0.25   # flat vol for the (misspecified) BS baseline
+
+training:
+  architecture: lstm
+  hidden_dims: [32]
+  risk: cvar
+  risk_kwargs: {alpha: 0.95}
+  n_epochs: 800
+  batch_size: 4096
+  lr: 0.001
+  log_every: 40
+  p0_init: 5.17   # Monte Carlo Heston ATM price (200k paths)
+
+n_test: 20000

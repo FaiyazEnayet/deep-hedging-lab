@@ -1,0 +1,33 @@
+name: gbm_call
+seed: 0
+
+market:
+  name: gbm
+  params:
+    S0: 100.0
+    r: 0.02
+    sigma: 0.25
+    T: 0.25
+
+derivative:
+  name: european_call
+  params:
+    K: 100.0
+
+hedge:
+  n_steps: 30
+  T: 0.25
+  cost_rate: 0.002   # 20 bps proportional transaction cost
+
+training:
+  architecture: mlp
+  hidden_dims: [32, 32]
+  risk: cvar
+  risk_kwargs: {alpha: 0.95}
+  n_epochs: 300
+  batch_size: 4096
+  lr: 0.001
+  log_every: 25
+  p0_init: bs
+
+n_test: 20000
