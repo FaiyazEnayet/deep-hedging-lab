@@ -29,7 +29,7 @@ train_deep_hedger(
 - **CVaR as a loss function is weirdly well-behaved.** Top-k gradients just work. I expected to need all kinds of smoothing tricks; I didn't.
 - **The MLP discovers no-trade regions by itself.** Nobody told it about Leland (1985). It just... stops trading when costs eat the edge. That was the moment this project felt worth it.
 - **LSTMs are overkill for GBM but earn their keep under Heston**, where the vol regime matters and a memoryless policy can't see it.
-- Letting the net use leverage (deltas outside [0,1]) trains fine and explodes out of sample. Ask me how I know. Outputs are sigmoid-constrained now.
+- Letting the net size positions outside [0,1] trains fine and explodes out of sample. Ask me how I know. Outputs are sigmoid-constrained now.
 
 ## What's in here
 
@@ -125,7 +125,7 @@ Numbers move with seeds. Rerun the config and check my work.
 
 ## Theory in 60 seconds
 
-You're short an option paying `Z` at `T`. You trade the stock at discrete dates, paying proportional costs. Self-financing gives your terminal wealth `X_T`; your loss is `Z − X_T`. Pick a convex risk measure `ρ` and solve `min_δ ρ(Z − X_T(δ))` over adapted strategies. A neural net parametrizes `δ`; Monte Carlo gives unbiased gradients. That's the whole paper. The rest is engineering.
+You owe a payoff `Z` at `T` and hold no offsetting position. You trade the stock at discrete dates, paying proportional costs. Self-financing gives your terminal wealth `X_T`; your loss is `Z − X_T`. Pick a convex risk measure `ρ` and solve `min_δ ρ(Z − X_T(δ))` over adapted strategies. A neural net parametrizes `δ`; Monte Carlo gives unbiased gradients. That's the whole paper. The rest is engineering.
 
 ## Reference
 

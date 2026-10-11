@@ -1,6 +1,6 @@
 """Self-financing hedging accounting with transaction costs.
 
-We consider a hedger who is short one derivative: they receive a premium
+We consider a hedger with a derivative liability: they receive a premium
 ``p0`` at time 0 and owe ``payoff`` at maturity ``T``. Trading happens at
 ``N`` discrete dates with step ``dt``. The strategy ``deltas`` holds
 ``delta_i`` shares over ``[t_i, t_{i+1})`` and liquidates at ``T``.
@@ -25,7 +25,7 @@ import torch
 
 
 def hedging_error(S, deltas, payoff, p0, r, dt, cost_rate):
-    """Terminal hedging error of a short position.
+    """Terminal hedging error of a liability position.
 
     Parameters
     ----------
