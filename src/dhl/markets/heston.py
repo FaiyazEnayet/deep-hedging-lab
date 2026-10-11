@@ -1,9 +1,13 @@
-"""Heston stochastic-volatility simulator.
+"""Heston stochastic-volatility price scenario generator.
 
-Risk-neutral dynamics::
+Simulates paths of a risky asset whose variance mean-reverts::
 
-    dS/S = r dt + sqrt(v) dW1
+    dS/S = mu dt + sqrt(v) dW1
     dv   = kappa (theta - v) dt + xi sqrt(v) dW2,   corr(dW1, dW2) = rho dt
+
+This is a scenario generator, not a pricing model: it produces
+realistic price paths with volatility clustering and leverage
+effects, nothing more.
 
 Two discretizations are available via ``scheme``:
 
@@ -61,10 +65,13 @@ def simulate_heston(
     n_paths, n_steps, T, S0, r, v0, kappa, theta, xi, rho, seed=None,
     scheme="euler",
 ):
-    """Simulate risk-neutral Heston paths.
+    """Simulate Heston price scenarios.
 
     Parameters
     ----------
+    r : float
+        Assumed mean growth rate of the scenario (continuously
+        compounded). Set to the cash rate for a driftless baseline.
     scheme : {"euler", "qe"}
         Discretization of the variance process (see module docstring).
 
@@ -101,7 +108,7 @@ def simulate_heston(
             v[:, i + 1] = v_next
             # Log-Euler spot update on the left variance. Using v[:, i]
             # (known at time i) rather than a trapezoidal average keeps the
-            # discounted spot an exact martingale: conditional on F_i, zv
+            # mean growth exactly consistent with r: conditional on F_i, zv
             # and z2 are independent N(0,1), so the shock's mgf cancels the
             # -0.5 v dt convexity term. zv is the same Gaussian that drove
             # the variance draw, preserving the leverage correlation.

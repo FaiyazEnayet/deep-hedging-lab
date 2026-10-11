@@ -1,7 +1,9 @@
 """Differentiable convex risk measures (PyTorch).
 
-The deep hedger minimizes one of these applied to the terminal hedging
-error ``L = payoff - X_T`` over a batch of simulated paths.
+Each measure takes a 1-D torch tensor of losses (e.g. a portfolio's
+shortfall below its floor over a batch of scenarios) and returns a
+scalar. They are differentiable almost everywhere so they can be used
+directly as training objectives.
 """
 
 import math

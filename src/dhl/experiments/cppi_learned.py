@@ -1,18 +1,16 @@
 """Portfolio insurance: classic CPPI vs a learned dynamic allocator.
 
-This reframes the lab's machinery around risk management instead of
-derivatives. CPPI (constant proportion portfolio insurance) protects a
-floor under wealth by holding ``multiplier * cushion`` in the risky
-asset, where ``cushion = wealth - floor``. Here a small neural policy
-learns the allocation directly: it maps (time left, cushion ratio,
-recent volatility) to a risky weight, trained to maximize expected
-terminal wealth with a penalty for breaching the floor. No options
-anywhere. Just a portfolio, a floor, and a network that learns not to
-fall through it.
+CPPI (constant proportion portfolio insurance) protects a floor under
+wealth by holding ``multiplier * cushion`` in the risky asset, where
+``cushion = wealth - floor``. Here a small neural policy learns the
+allocation directly: it maps (time left, cushion ratio, recent
+volatility) to a risky weight, trained to maximize expected terminal
+wealth with a penalty for breaching the floor. No options anywhere.
+Just a portfolio, a floor, and a network that learns not to fall
+through it.
 
-Training uses block-bootstrapped real SPY paths (same 21-day blocks as
-``real_data_eval``), fresh every epoch. Evaluation is on held-out
-bootstrap seeds.
+Training uses block-bootstrapped real SPY paths (21-day blocks, fresh
+every epoch). Evaluation is on held-out bootstrap seeds.
 
 Run: ``python -m dhl.experiments.cppi_learned [--epochs 200]``
 
@@ -35,7 +33,7 @@ V0 = 100.0
 FLOOR = 90.0  # 90% of initial capital, fixed (not grown at r)
 R = 0.02  # cash earns 2% annually
 DT = 1.0 / 252.0  # daily rebalancing
-COST_RATE = 0.002  # 20 bps, same as the hedging experiments
+COST_RATE = 0.002  # 20 bps proportional cost on each rebalance
 CAP = 1.5  # max risky weight for every strategy (apples to apples)
 BLOCK_LEN = 21
 HORIZONS = (30, 63)  # trading days

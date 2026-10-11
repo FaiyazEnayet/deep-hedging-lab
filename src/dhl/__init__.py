@@ -1,48 +1,58 @@
-"""deep-hedging-lab: train neural networks to hedge derivatives.
+"""deep-hedging-lab: neural networks for portfolio insurance.
 
-A from-scratch implementation of deep hedging (Buehler et al., 2019):
-optimal hedging under market frictions, learned directly from simulated
-paths by minimizing a convex risk measure of the terminal hedging error.
+A small research lab for a single question: can a neural network learn
+to protect a portfolio better than the textbook rule? The lab has three
+parts: price scenario generators (GBM, Heston stochastic volatility,
+Merton jumps, and a block bootstrap over real SPY history), convex risk
+measures usable as training objectives, and a learned dynamic allocator
+that guards a wealth floor under transaction costs. No options, no
+derivatives of any kind. Just a portfolio, a floor, and scenarios.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
-from dhl.markets import simulate_gbm, simulate_heston, simulate_merton
-from dhl.derivatives import (
-    european_call,
-    european_put,
-    digital_call,
-    asian_call,
-    up_and_out_call,
-    bs_call_price,
-    bs_call_delta,
+from dhl.markets import (
+    block_bootstrap_paths,
+    fetch_spy_daily_yahoo,
+    load_spy_daily,
+    log_returns,
+    simulate_gbm,
+    simulate_heston,
+    simulate_merton,
 )
 from dhl.risk import cvar, entropic_risk, variance
-from dhl.hedgers import (
-    hedging_error,
-    DeepHedger,
-    train_deep_hedger,
-    bs_delta_hedge,
-    leland_delta_hedge,
+from dhl.experiments.cppi_learned import (
+    CAP,
+    COST_RATE,
+    FLOOR,
+    V0,
+    CPPIPolicy,
+    classic_cppi_weight,
+    evaluate as evaluate_cppi,
+    rollout as cppi_rollout,
+    run_experiment as run_cppi_experiment,
+    train_cppi_policy,
 )
 
 __all__ = [
     "simulate_gbm",
     "simulate_heston",
     "simulate_merton",
-    "european_call",
-    "european_put",
-    "digital_call",
-    "asian_call",
-    "up_and_out_call",
-    "bs_call_price",
-    "bs_call_delta",
+    "block_bootstrap_paths",
+    "fetch_spy_daily_yahoo",
+    "load_spy_daily",
+    "log_returns",
     "cvar",
     "entropic_risk",
     "variance",
-    "hedging_error",
-    "DeepHedger",
-    "train_deep_hedger",
-    "bs_delta_hedge",
-    "leland_delta_hedge",
+    "CAP",
+    "COST_RATE",
+    "FLOOR",
+    "V0",
+    "CPPIPolicy",
+    "classic_cppi_weight",
+    "evaluate_cppi",
+    "cppi_rollout",
+    "run_cppi_experiment",
+    "train_cppi_policy",
 ]

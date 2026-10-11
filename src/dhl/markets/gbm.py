@@ -1,25 +1,33 @@
-"""Geometric Brownian motion (Black-Scholes) simulator.
+"""Geometric Brownian motion price scenario generator.
 
-Risk-neutral dynamics: dS/S = r dt + sigma dW.
+Simulates paths of a risky asset with constant volatility::
+
+    dS/S = mu dt + sigma dW
+
 Uses the exact discretization, so there is no time-stepping bias.
+``mu`` is the assumed mean growth rate of the scenario; set it to the
+cash rate for a driftless baseline or to a historical estimate for a
+realistic one. This is a scenario generator, not a pricing model: it
+produces paths, nothing more.
 """
 
 import numpy as np
 
 
 def simulate_gbm(n_paths, n_steps, T, S0, r, sigma, seed=None):
-    """Simulate risk-neutral GBM paths.
+    """Simulate GBM price scenarios.
 
     Parameters
     ----------
     n_paths : int
     n_steps : int
     T : float
-        Maturity in years.
+        Horizon in years.
     S0 : float
-        Spot price.
+        Starting price.
     r : float
-        Continuously compounded risk-free rate.
+        Assumed mean growth rate of the scenario (continuously
+        compounded). Set to the cash rate for a driftless baseline.
     sigma : float
         Volatility.
     seed : int, optional

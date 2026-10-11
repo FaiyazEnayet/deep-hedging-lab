@@ -1,8 +1,10 @@
-"""Risk-neutral Monte Carlo simulators for the underlying asset.
+"""Price scenario generators for a risky asset.
 
 All simulators return paths of shape ``(n_paths, n_steps + 1)`` with the
-spot price in column 0. Dynamics are simulated under the risk-neutral
-measure so that discounted asset prices are martingales.
+starting price in column 0. These are SDEs used to generate scenarios
+for portfolio experiments: GBM, Heston stochastic volatility, Merton
+jump diffusion, and a block bootstrap over real SPY history. They
+produce price paths, nothing more.
 """
 
 from dhl.markets.gbm import simulate_gbm

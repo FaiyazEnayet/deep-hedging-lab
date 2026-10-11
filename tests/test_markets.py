@@ -5,11 +5,11 @@ import numpy as np
 from dhl.markets import simulate_gbm, simulate_heston, simulate_merton
 
 
-def test_gbm_shape_and_martingale():
+def test_gbm_shape_and_mean():
     S = simulate_gbm(20000, 50, T=1.0, S0=100.0, r=0.05, sigma=0.2, seed=0)
     assert S.shape == (20000, 51)
     assert np.all(S > 0)
-    # Risk-neutral: E[S_T] = S0 * e^{rT}.
+    # Mean growth check: E[S_T] = S0 * e^{rT}.
     assert abs(S[:, -1].mean() - 100 * np.exp(0.05)) < 1.0
 
 
@@ -41,7 +41,7 @@ def test_heston_zero_vol_of_vol_is_gbm():
     assert abs(np.log(s_h[:, -1]).mean() - np.log(s_g[:, -1]).mean()) < 0.05
 
 
-def test_merton_martingale():
+def test_merton_mean_growth():
     S = simulate_merton(
         30000, 50, T=1.0, S0=100.0, r=0.05, sigma=0.2,
         lam=0.5, mu_j=-0.05, sigma_j=0.1, seed=4,
@@ -61,14 +61,14 @@ def test_merton_no_jumps_is_gbm():
     assert abs(s_m[:, -1].mean() - 100 * np.exp(0.03 * 0.5)) < 2.0
 
 
-def test_heston_qe_nonnegative_and_martingale():
+def test_heston_qe_nonnegative_and_mean_growth():
     S, v = simulate_heston(
         20000, 50, T=1.0, S0=100.0, r=0.02, v0=0.04,
         kappa=2.0, theta=0.04, xi=0.3, rho=-0.5, seed=11, scheme="qe",
     )
     assert S.shape == v.shape == (20000, 51)
     assert np.all(S > 0) and np.all(v >= 0)  # QE variance is non-negative by construction
-    # Exact martingale: E[S_T] = S0 e^{rT}.
+    # Mean growth check: E[S_T] = S0 e^{rT}.
     assert abs(S[:, -1].mean() - 100 * np.exp(0.02)) < 1.5
     # Variance mean-reverts toward theta.
     assert abs(v[:, -1].mean() - 0.04) < 0.01
