@@ -53,11 +53,21 @@ def fetch_spy_daily_yahoo(data_dir=DATA_DIR):
 
     Returns the paths written. No API key needed. Raises on HTTP errors.
     """
+    return fetch_ticker_daily_yahoo("SPY", data_dir=data_dir)
+
+
+def fetch_ticker_daily_yahoo(ticker, data_dir=DATA_DIR):
+    """Download daily bars for any Yahoo ticker, saved as CSV parts.
+
+    Writes ``{ticker}_daily_2015.csv`` and ``{ticker}_daily_2021.csv``
+    (lowercase ticker), split in half like the SPY parts. No API key.
+    """
+    t = ticker.upper()
     req = urllib.request.Request(
-        YAHOO_CHART_URL,
-        headers={"User-Agent": "Mozilla/5.0 (compatible; deep-hedging-lab)"},
+        YAHOO_CHART_URL.replace("/SPY?", f"/{t}?"),
+        headers={"User-Agent": "Mozilla/5.0 (compatible; neural-cppi)"},
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=60) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
     result = payload["chart"]["result"][0]
     stamps = result["timestamp"]
@@ -67,11 +77,11 @@ def fetch_spy_daily_yahoo(data_dir=DATA_DIR):
     import datetime
 
     rows = []
-    for i, t in enumerate(stamps):
+    for i, ts in enumerate(stamps):
         if quote["close"][i] is None or adj[i] is None:
             continue
         day = datetime.datetime.fromtimestamp(
-            t, datetime.timezone.utc
+            ts, datetime.timezone.utc
         ).date().isoformat()
         rows.append(
             [
@@ -84,7 +94,75 @@ def fetch_spy_daily_yahoo(data_dir=DATA_DIR):
                 quote["volume"][i],
             ]
         )
-    return _write_parts(rows, data_dir)
+    mid = len(rows) // 2
+    paths = []
+    for name, rs in (
+        (f"{t.lower()}_daily_2015.csv", rows[:mid]),
+        (f"{t.lower()}_daily_2021.csv", rows[mid:]),
+    ):
+        path = os.path.join(data_dir, name)
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        with open(path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(
+                ["Date", "Open", "High", "Low", "Close", "AdjClose", "Volume"]
+            )
+            writer.writerows(rs)
+        paths.append(path)
+    return paths
+
+
+def load_ticker_daily(ticker, data_dir=DATA_DIR):
+    """Load the committed daily CSV parts for one ticker.
+
+    Same return format as :func:`load_spy_daily`.
+    """
+    t = ticker.lower()
+    files = sorted(
+        glob.glob(os.path.join(data_dir, f"{t}_daily_*.csv"))
+    )
+    if not files:
+        raise FileNotFoundError(f"no {t}_daily_*.csv parts in {data_dir}")
+    return _load_parts(files)
+
+
+def _load_parts(files):
+    dates = []
+    cols = {k: [] for k in ("open", "high", "low", "close", "adjclose", "volume")}
+    for fp in files:
+        with open(fp, newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                dates.append(row["Date"])
+                cols["open"].append(float(row["Open"]))
+                cols["high"].append(float(row["High"]))
+                cols["low"].append(float(row["Low"]))
+                cols["close"].append(float(row["Close"]))
+                cols["adjclose"].append(float(row["AdjClose"]))
+                cols["volume"].append(float(row["Volume"]))
+    out = {"dates": dates}
+    out.update({k: np.asarray(v) for k, v in cols.items()})
+    return out
+
+
+def load_aligned_returns(tickers, data_dir=DATA_DIR):
+    """Load daily log returns for several tickers on their common dates.
+
+    Returns ``(dates, rets)`` where ``dates`` is the sorted list of common
+    trading dates and ``rets`` maps each ticker to its log-return array
+    (length ``len(dates) - 1``). Inner join: a date must exist for every
+    ticker. US-listed ETFs share a calendar, so almost nothing is lost.
+    """
+    series = {}
+    for t in tickers:
+        d = load_ticker_daily(t, data_dir=data_dir)
+        series[t] = dict(zip(d["dates"], d["adjclose"]))
+    common = sorted(set.intersection(*(set(s) for s in series.values())))
+    rets = {}
+    for t in tickers:
+        prices = np.array([series[t][d] for d in common])
+        rets[t] = log_returns(prices)
+    return common, rets
 
 
 def _part_files(data_dir=DATA_DIR):

@@ -13,7 +13,10 @@ from dhl.markets.jump import simulate_merton
 from dhl.markets.real import (
     block_bootstrap_paths,
     fetch_spy_daily_yahoo,
+    fetch_ticker_daily_yahoo,
+    load_aligned_returns,
     load_spy_daily,
+    load_ticker_daily,
     log_returns,
 )
 
@@ -23,6 +26,9 @@ __all__ = [
     "simulate_merton",
     "block_bootstrap_paths",
     "fetch_spy_daily_yahoo",
+    "fetch_ticker_daily_yahoo",
+    "load_aligned_returns",
     "load_spy_daily",
+    "load_ticker_daily",
     "log_returns",
 ]

@@ -33,6 +33,16 @@ from dhl.experiments.cppi_learned import (
     run_experiment as run_cppi_experiment,
     train_cppi_policy,
 )
+from dhl.experiments.cppi_multi import (
+    MAX_DD,
+    TICKERS,
+    MultiAssetPolicy,
+    block_bootstrap_paths_multi,
+    evaluate_multi,
+    rollout_multi,
+    run_all as run_cppi_multi_experiment,
+    train_multi_policy,
+)
 
 __all__ = [
     "simulate_gbm",
@@ -55,4 +65,12 @@ __all__ = [
     "cppi_rollout",
     "run_cppi_experiment",
     "train_cppi_policy",
+    "MAX_DD",
+    "TICKERS",
+    "MultiAssetPolicy",
+    "block_bootstrap_paths_multi",
+    "evaluate_multi",
+    "rollout_multi",
+    "run_cppi_multi_experiment",
+    "train_multi_policy",
 ]
