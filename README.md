@@ -1,4 +1,4 @@
-# deep-hedging-lab
+# neural-cppi
 
 **I teach neural networks to protect a portfolio.**
 
