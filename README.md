@@ -4,7 +4,7 @@
 
 A network learns how to allocate between a risky asset and cash, day by day, guarding a floor under wealth while transaction costs eat every rebalance. The benchmark is the textbook rule, classic CPPI. The question: can the network learn a better trade between growth and safety?
 
-I started this lab hedging derivatives and then asked myself what the machinery was really for. Strip away the payoff and what remains is risk management: scenarios, a floor, a cost for every trade, and a policy that has to survive all of it. That is a cleaner problem and an honest one. So I rebuilt the repo around it. No options. No derivatives of any kind. Just a portfolio, a floor, and a network that learns not to fall through it.
+I built this lab around a simple question: can a network learn to protect a portfolio? What remains is risk management in its cleanest form: scenarios, a floor, a cost for every trade, and a policy that has to survive all of it. Just a portfolio, a floor, and a network that learns not to fall through it.
 
 ```python
 from dhl import CPPIPolicy, train_cppi_policy, block_bootstrap_paths, load_spy_daily, log_returns
