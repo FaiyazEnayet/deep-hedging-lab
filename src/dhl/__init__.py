@@ -1,4 +1,4 @@
-"""deep-hedging-lab: neural networks for portfolio insurance.
+"""neural-cppi: neural networks for portfolio insurance.
 
 A small research lab for a single question: can a neural network learn
 to protect a portfolio better than the textbook rule? The lab has three
