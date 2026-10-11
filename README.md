@@ -1,8 +1,10 @@
 # deep-hedging-lab
 
-**I teach neural networks to hedge options under transaction costs, stochastic volatility, and jumps.**
+**I teach neural networks to manage financial risk.**
 
-I kept running into the same wall: every "learn quant finance" project is either a moving-average backtest on Yahoo data or Black-Scholes re-implemented for the hundredth time. I wanted something at the intersection I actually care about: derivatives and machine learning. So I built the thing I wished existed: deep hedging (Buehler et al., 2019), from scratch, no magic, no 500-line `train.py` you can't read.
+Hedging options under transaction costs, stochastic volatility, and jumps. Insuring portfolios with learned dynamic allocation. Same question throughout: can a network learn risk management better than the textbook?
+
+I kept running into the same wall: every "learn quant finance" project is either a moving-average backtest on Yahoo data or Black-Scholes re-implemented for the hundredth time. I wanted something at the intersection I actually care about: risk management and machine learning. So I built the thing I wished existed: deep hedging (Buehler et al., 2019), from scratch, no magic, no 500-line `train.py` you can't read. Then I pointed the same machinery at portfolio insurance, because hedging a derivative and protecting a portfolio are the same problem wearing different clothes.
 
 The idea is simple and kind of beautiful: stop deriving hedging formulas. Simulate a market, let a neural net trade in it, and punish it with a risk measure until it learns to hedge. Under transaction costs and stochastic vol the textbook delta is *wrong*. The network figures out something better entirely on its own.
 
@@ -37,6 +39,7 @@ train_deep_hedger(
 - **Classical baselines:** Black-Scholes delta hedge and Leland's cost-adjusted vol, so the neural net has something honest to beat.
 - **Deep hedgers:** MLP policy with previous-holding memory, LSTM policy, learnable initial capital.
 - **Risk measures:** variance, empirical CVaR, entropic risk, all differentiable, all usable as training objectives.
+- **Portfolio insurance:** classic CPPI (constant proportion portfolio insurance) vs a neural allocator learned on bootstrapped real paths. Floor at 90% of capital, 20 bps costs, no derivatives involved: `python -m dhl.experiments.cppi_learned`.
 - **Exact accounting:** self-financing wealth, discrete rebalancing, proportional costs compounded to maturity, terminal liquidation.
 - **No-lookahead guarantee:** tested: shocking future prices can't change earlier holdings.
 - **Experiment runner:** YAML configs, seeded runs, `metrics.json` + plots under `runs/`.
@@ -48,6 +51,7 @@ pip install -e ".[dev]"
 pytest                       # 42 tests, about a minute
 python -m dhl.experiments.runner configs/gbm_call.yaml
 python -m dhl.experiments.real_data_eval   # real SPY paths, no retraining
+python -m dhl.experiments.cppi_learned     # portfolio insurance: CPPI vs learned
 ```
 
 Start with the notebooks: `01_baselines.ipynb` → `02_deep_hedging.ipynb` → `03_stochastic_vol.ipynb`. They read like a lab journal, because that's what they are.
@@ -92,6 +96,30 @@ Same GBM-trained MLP hedger, no retraining, evaluated on 20,000 paths block-boot
 | Leland     | -0.83     | 2.87   | 85%       |
 
 Negative mean losses are the equity risk premium at work. These paths drift about 13% a year, so do not compare these numbers to the risk-neutral tables above. The honest decomposition: the deep hedger's learned premium is 5.46, priced for a 25% vol world, while realized vol is 17.55% (BS premium 3.75). At a common 3.75 premium the hedging contest is a draw: mean -0.98 vs -0.83, CVaR95 3.05 vs 2.86, profit probability 82% vs 86%. So the transfer win is mostly the premium, not the deltas. The policy holds up out of sample, which is more than I expected. A second bootstrap seed gives the same picture.
+
+### Portfolio insurance
+
+Same machinery, no derivatives. A CPPI strategy protects a floor at 90% of capital by holding multiplier times cushion in SPY, rebalanced daily with 20 bps costs. I trained a small network to choose the allocation directly: it sees time left, cushion ratio, and recent volatility, and outputs a risky weight in [0, 1.5]. The objective is expected terminal wealth minus 30 times the expected shortfall below the floor. Training and testing both use block-bootstrapped real SPY paths, 20k held-out paths on seeds the network never saw.
+
+30-day horizon:
+
+| Strategy | E[wealth] | Std  | P(breach) |
+|----------|-----------|------|-----------|
+| CPPI m=3 | 100.52    | 1.61 | 0.000     |
+| CPPI m=4 | 100.58    | 2.14 | 0.000     |
+| CPPI m=5 | 100.64    | 2.67 | 0.000     |
+| Learned  | 100.65    | 2.03 | 0.001     |
+
+63-day horizon:
+
+| Strategy | E[wealth] | Std  | P(breach) |
+|----------|-----------|------|-----------|
+| CPPI m=3 | 101.22    | 2.46 | 0.000     |
+| CPPI m=4 | 101.41    | 3.31 | 0.000     |
+| CPPI m=5 | 101.57    | 4.18 | 0.000     |
+| Learned  | 102.00    | 4.28 | 0.004     |
+
+The network matches the most aggressive classic multiplier on expected wealth with less wobble at 30 days, and beats it outright at 63 days. The price is a small breach probability where classic CPPI has none on these paths. It learned to trade a little floor risk for a little extra return. Whether that trade is worth it is your call, not the network's.
 
 Numbers move with seeds. Rerun the config and check my work.
 
