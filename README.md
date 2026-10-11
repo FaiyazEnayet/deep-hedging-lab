@@ -59,10 +59,6 @@ Start with the notebooks: `01_baselines.ipynb` → `02_deep_hedging.ipynb` → `
 - Risk-neutral simulation only. Hedging is about replication, not alpha. If you want drift, add it yourself.
 - CPU-friendly by design. A full run takes minutes, not hours.
 
-## A note on Sharia compliance
-
-Most scholars consider trading conventional options haram because of gharar. This repo does not trade anything. It is a research laboratory for the mathematics of hedging. That same mathematics is what Islamic banks use for Sharia compliant risk management, for example hedging built on wa'd (a unilateral promise) rather than a conventional option contract. The code prices and hedges. Whether your use is halal depends on the contracts you touch, not the formulas. I am not a scholar. If you need a ruling, ask one.
-
 ## Results
 
 European call, GBM, 30 rebalancing dates, 20 bps costs, CVaR@95% objective (`configs/gbm_call.yaml`, seed 0, 20k fresh test paths):
