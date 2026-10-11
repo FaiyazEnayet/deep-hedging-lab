@@ -8,5 +8,19 @@ measure so that discounted asset prices are martingales.
 from dhl.markets.gbm import simulate_gbm
 from dhl.markets.heston import simulate_heston
 from dhl.markets.jump import simulate_merton
+from dhl.markets.real import (
+    block_bootstrap_paths,
+    fetch_spy_daily_yahoo,
+    load_spy_daily,
+    log_returns,
+)
 
-__all__ = ["simulate_gbm", "simulate_heston", "simulate_merton"]
+__all__ = [
+    "simulate_gbm",
+    "simulate_heston",
+    "simulate_merton",
+    "block_bootstrap_paths",
+    "fetch_spy_daily_yahoo",
+    "load_spy_daily",
+    "log_returns",
+]

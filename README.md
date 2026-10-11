@@ -31,7 +31,8 @@ train_deep_hedger(
 
 ## What's in here
 
-- **Market simulators:** GBM (exact discretization), Heston stochastic vol (full-truncation Euler), Merton jump diffusion. All risk-neutral, all with martingale tests.
+- **Market simulators:** GBM (exact discretization), Heston stochastic vol (full-truncation Euler or Andersen's QE scheme), Merton jump diffusion. All risk-neutral, all with martingale tests.
+- **Real data:** SPY daily bars from Yahoo (2015 to 2026, committed under `data/`) and a circular block bootstrap that turns history into test paths while keeping volatility clustering. The GBM-trained hedger gets evaluated on 20k bootstrapped real paths with no retraining: `python -m dhl.experiments.real_data_eval`.
 - **Payoffs:** European call/put, digital, arithmetic Asian, up-and-out barrier.
 - **Classical baselines:** Black-Scholes delta hedge and Leland's cost-adjusted vol, so the neural net has something honest to beat.
 - **Deep hedgers:** MLP policy with previous-holding memory, LSTM policy, learnable initial capital.
@@ -44,16 +45,17 @@ train_deep_hedger(
 
 ```bash
 pip install -e ".[dev]"
-pytest                       # 30+ tests, about a minute
+pytest                       # 42 tests, about a minute
 python -m dhl.experiments.runner configs/gbm_call.yaml
+python -m dhl.experiments.real_data_eval   # real SPY paths, no retraining
 ```
 
 Start with the notebooks: `01_baselines.ipynb` → `02_deep_hedging.ipynb` → `03_stochastic_vol.ipynb`. They read like a lab journal, because that's what they are.
 
 ## Honest limitations
 
-- Heston uses Euler discretization. Fine for hedging research, don't price exotics to the 4th decimal with it.
-- No real market data. This is a laboratory, not a trading system. If you wire in LOBSTER data, I'd love to hear how it goes.
+- Heston defaults to Euler discretization; Andersen's QE scheme is available via `scheme="qe"` and keeps variance non-negative by construction. Fine for hedging research, don't price exotics to the 4th decimal with either.
+- Real data, with caveats. SPY daily bars live in the repo and the trained hedger is evaluated on block-bootstrapped real paths. It is still daily bars on a single name. The bootstrap assumes history is a fair deck to deal from. The paths carry the equity risk premium, so absolute losses do not compare to the risk-neutral tables. It is a robustness check, not a trading system.
 - Risk-neutral simulation only. Hedging is about replication, not alpha. If you want drift, add it yourself.
 - CPU-friendly by design. A full run takes minutes, not hours.
 
@@ -78,6 +80,18 @@ Under Heston stochastic vol (`configs/heston_call.yaml`, LSTM policy, seed 0, 20
 | Deep hedge | 0.06      | 3.39   | 46%       |
 
 The learned policy wins on average and lands in profit far more often; the tail is roughly a draw. An honest result, not a sweep. Notebook 03 walks through it.
+
+### Real data
+
+Same GBM-trained MLP hedger, no retraining, evaluated on 20,000 paths block-bootstrapped from real SPY daily returns (2015-01-02 to 2026-10-09, 21-day blocks, seed 999). BS delta uses the sample realized vol of 17.55%. 30-day ATM call, 20 bps costs:
+
+| Strategy   | Mean loss | CVaR95 | P(profit) |
+|------------|-----------|--------|-----------|
+| Deep hedge | -2.70     | 1.33   | 96%       |
+| BS delta   | -0.83     | 2.86   | 86%       |
+| Leland     | -0.83     | 2.87   | 85%       |
+
+Negative mean losses are the equity risk premium at work. These paths drift about 13% a year, so do not compare these numbers to the risk-neutral tables above. The honest decomposition: the deep hedger's learned premium is 5.46, priced for a 25% vol world, while realized vol is 17.55% (BS premium 3.75). At a common 3.75 premium the hedging contest is a draw: mean -0.98 vs -0.83, CVaR95 3.05 vs 2.86, profit probability 82% vs 86%. So the transfer win is mostly the premium, not the deltas. The policy holds up out of sample, which is more than I expected. A second bootstrap seed gives the same picture.
 
 Numbers move with seeds. Rerun the config and check my work.
 

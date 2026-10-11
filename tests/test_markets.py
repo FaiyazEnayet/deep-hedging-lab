@@ -59,3 +59,45 @@ def test_merton_no_jumps_is_gbm():
     )
     assert np.all(s_m > 0)
     assert abs(s_m[:, -1].mean() - 100 * np.exp(0.03 * 0.5)) < 2.0
+
+
+def test_heston_qe_nonnegative_and_martingale():
+    S, v = simulate_heston(
+        20000, 50, T=1.0, S0=100.0, r=0.02, v0=0.04,
+        kappa=2.0, theta=0.04, xi=0.3, rho=-0.5, seed=11, scheme="qe",
+    )
+    assert S.shape == v.shape == (20000, 51)
+    assert np.all(S > 0) and np.all(v >= 0)  # QE variance is non-negative by construction
+    # Exact martingale: E[S_T] = S0 e^{rT}.
+    assert abs(S[:, -1].mean() - 100 * np.exp(0.02)) < 1.5
+    # Variance mean-reverts toward theta.
+    assert abs(v[:, -1].mean() - 0.04) < 0.01
+
+
+def test_heston_qe_matches_euler_statistically():
+    kw = dict(n_paths=30000, n_steps=50, T=1.0, S0=100.0, r=0.02, v0=0.04,
+              kappa=2.0, theta=0.04, xi=0.3, rho=-0.5)
+    S_q, _ = simulate_heston(seed=12, scheme="qe", **kw)
+    S_e, _ = simulate_heston(seed=13, scheme="euler", **kw)
+    lr_q, lr_e = np.log(S_q[:, -1] / 100), np.log(S_e[:, -1] / 100)
+    # Same first two moments of terminal log returns.
+    assert abs(lr_q.mean() - lr_e.mean()) < 0.02
+    assert abs(lr_q.std() - lr_e.std()) < 0.02
+
+
+def test_heston_qe_stress_high_vol_of_vol():
+    # Regime where Euler is visibly biased; QE must stay sane.
+    S, v = simulate_heston(
+        10000, 20, T=1.0, S0=100.0, r=0.0, v0=0.04,
+        kappa=1.0, theta=0.04, xi=1.5, rho=-0.7, seed=14, scheme="qe",
+    )
+    assert np.all(v >= 0) and np.all(S > 0)
+    assert abs(S[:, -1].mean() - 100.0) < 3.0
+
+
+def test_heston_bad_scheme_raises():
+    import pytest
+
+    with pytest.raises(ValueError, match="unknown Heston scheme"):
+        simulate_heston(10, 5, T=1.0, S0=100.0, r=0.0, v0=0.04,
+                        kappa=1.0, theta=0.04, xi=0.3, rho=0.0, scheme="milstein")
