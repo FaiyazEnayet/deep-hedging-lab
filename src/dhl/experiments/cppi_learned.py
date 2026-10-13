@@ -96,34 +96,32 @@ class CPPIPolicy(nn.Module):
 def _vol_features(S, window=21):
     """Annualized rolling std of log returns, shape (n_paths, n_steps).
 
-    Pure function of prices (no gradients needed); expanding window
-    for the first ``window`` steps.
+    Strictly causal: the feature at time ``i`` uses only returns
+    ``lr[:, :i]``, i.e. price moves that already happened. The first
+    step has no history yet, so its feature is 0.0.
     """
     n, steps_p1 = S.shape
     steps = steps_p1 - 1
     lr = torch.log(S[:, 1:] / S[:, :-1])
     vols = torch.empty_like(lr)
     for i in range(steps):
-        j = max(0, i - window + 1)
-        w = lr[:, j : i + 1]
-        vols[:, i] = w.std(dim=1, unbiased=False) * math.sqrt(252.0)
-    return torch.nan_to_num(vols, nan=0.0)
+        j = max(0, i - window)
+        w = lr[:, j:i]
+        if w.shape[1] == 0:
+            vols[:, i] = 0.0
+        else:
+            vols[:, i] = w.std(dim=1, unbiased=False) * math.sqrt(252.0)
+    return vols
 
 
 def rollout(S, weight_fn, floor=FLOOR, r=R, dt=DT, cost_rate=COST_RATE,
             return_path=False):
     """Self-financing portfolio wealth under a dynamic allocation.
 
-    Parameters
-    ----------
-    S : torch.Tensor, shape (n_paths, n_steps + 1)
-    weight_fn : callable ``(i, V, tau_frac, cushion_ratio, vol) -> w``
-        Risky weight in [0, cap] chosen at each rebalancing date.
-    return_path : if True, also return wealth at every date.
-
-    Returns
-    -------
-    V_T : torch.Tensor, shape (n_paths,), after liquidating at T.
+    S has shape (n_paths, n_steps + 1). weight_fn(i, V, tau_frac,
+    cushion_ratio, vol) picks the risky weight in [0, cap] at each
+    rebalancing date. Returns terminal wealth per path (n_paths,);
+    with return_path=True also the full wealth path.
     """
     n, steps_p1 = S.shape
     steps = steps_p1 - 1

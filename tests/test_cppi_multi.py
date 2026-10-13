@@ -15,6 +15,7 @@ from dhl.experiments.cppi_multi import (
     MultiAssetPolicy,
     _classic_multi_weight_fn,
     _learned_multi_weight_fn,
+    _trail_features,
     block_bootstrap_paths_multi,
     evaluate_multi,
     rollout_multi,
@@ -167,3 +168,24 @@ def test_cross_decade_split_covers_covid_crash():
     pre = rets["SPY"][d < "2020-01-01"]
     assert len(pre) > 1000 and len(post) > 1000
     assert post.min() < -0.10  # COVID crash days are in the test slice
+
+
+def test_trail_features_are_causal():
+    # Shifting prices at i+1 must not move any feature at times <= i.
+    torch.manual_seed(2)
+    P = torch.exp(torch.randn(4, 31, 3).cumsum(dim=1) * 0.02)
+    base = _trail_features(P)
+    for i in [0, 5, 15, 29]:
+        bumped = P.clone()
+        bumped[:, i + 1, :] *= 1.1
+        got = _trail_features(bumped)
+        assert torch.equal(got[:, : i + 1, :], base[:, : i + 1, :]), f"leak at i={i}"
+
+
+def test_trail_features_first_step_is_zero():
+    # No history at i=0, so the feature is exactly 0, not a nan cleanup.
+    torch.manual_seed(3)
+    P = torch.exp(torch.randn(3, 21, 2).cumsum(dim=1) * 0.02)
+    trail = _trail_features(P)
+    assert torch.all(trail[:, 0, :] == 0.0)
+    assert torch.isfinite(trail).all()

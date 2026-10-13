@@ -207,26 +207,11 @@ def log_returns(prices):
 def block_bootstrap_paths(
     returns, n_paths, path_len, block_len=21, S0=100.0, seed=None
 ):
-    """Generate price paths by circular block bootstrap of log returns.
+    """Price paths from a circular block bootstrap of log returns.
 
-    Parameters
-    ----------
-    returns : array_like, shape (n,)
-        Historical log returns (e.g. daily SPY log returns).
-    n_paths : int
-        Number of paths to generate.
-    path_len : int
-        Number of steps per path (path has ``path_len + 1`` prices).
-    block_len : int
-        Block length in steps; 21 trading days ~= one month, long enough
-        to keep volatility clustering, short enough to mix regimes.
-    S0 : float
-        Starting price; paths are normalized so only returns matter.
-    seed : int, optional
-
-    Returns
-    -------
-    S : np.ndarray, shape (n_paths, path_len + 1)
+    Blocks of ``block_len`` steps (21 trading days ~= a month) keep
+    volatility clustering while mixing regimes. Returns an array of
+    shape (n_paths, path_len + 1) starting at S0.
     """
     r = np.asarray(returns, dtype=float)
     n = len(r)

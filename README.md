@@ -83,7 +83,7 @@ train_cppi_policy(policy, sampler, horizon_days=30, n_epochs=200)
 | CPPI m=3 | 100.52    | 1.61 | 0.000     |
 | CPPI m=4 | 100.58    | 2.14 | 0.000     |
 | CPPI m=5 | 100.64    | 2.67 | 0.000     |
-| Learned  | 100.64    | 2.02 | 0.001     |
+| Learned  | 100.64    | 2.04 | 0.001     |
 
 63 day horizon:
 
@@ -92,7 +92,7 @@ train_cppi_policy(policy, sampler, horizon_days=30, n_epochs=200)
 | CPPI m=3 | 101.22    | 2.46 | 0.000     |
 | CPPI m=4 | 101.41    | 3.31 | 0.000     |
 | CPPI m=5 | 101.57    | 4.18 | 0.000     |
-| Learned  | 102.00    | 4.28 | 0.004     |
+| Learned  | 101.70    | 3.63 | 0.003     |
 
 The network matches the most aggressive classic multiplier on expected wealth with less wobble at 30 days, and beats it outright at 63 days. The price is a small breach probability where classic CPPI has none on these paths. It learned to trade a little floor risk for extra return. Whether that trade is worth it is your call, not the network's.
 
@@ -106,16 +106,16 @@ Numbers move with seeds. Rerun it and check my work.
 
 | Strategy | E[wealth] | Std | P(breach) |
 |---|---|---|---|
-| Learned multi (3 assets) | 100.78 | 2.85 | 0.001 |
-| Learned single (SPY) | 100.61 | 1.96 | 0.001 |
+| Learned multi (3 assets) | 100.77 | 2.83 | 0.002 |
+| Learned single (SPY) | 100.60 | 1.93 | 0.001 |
 | Classic m=4 (mix) | 100.36 | 1.37 | 0.000 |
 
 63 day horizon:
 
 | Strategy | E[wealth] | Std | P(breach) |
 |---|---|---|---|
-| Learned multi (3 assets) | 101.97 | 3.85 | 0.001 |
-| Learned single (SPY) | 101.59 | 3.01 | 0.003 |
+| Learned multi (3 assets) | 101.88 | 3.80 | 0.001 |
+| Learned single (SPY) | 101.56 | 2.97 | 0.003 |
 | Classic m=4 (mix) | 100.97 | 2.11 | 0.000 |
 
 Diversification helps the learner: more return at both horizons, at higher volatility. Classic never breaches. Same trade as before, now across assets.
@@ -126,7 +126,7 @@ Instead of a fixed 90, the floor ratchets: floor = 0.90 times the running wealth
 
 | Strategy | Fixed floor | Drawdown floor |
 |---|---|---|
-| Learned multi | 101.93 / 3.82 / 0.004 | 101.84 / 3.42 / 0.003 |
+| Learned multi | 101.85 / 3.75 / 0.004 | 101.73 / 3.29 / 0.003 |
 | Classic m=4 (mix) | 100.97 / 2.11 / 0.000 | 100.93 / 1.87 / 0.000 |
 
 (Each cell: E[wealth] / Std / P(breach anytime).)
@@ -140,7 +140,7 @@ I trained the single asset learner on pre 2020 paths only, then evaluated on 202
 | Strategy | E[wealth] | Std | P(breach) |
 |---|---|---|---|
 | Learned (train pre-2020) | 101.26 | 4.57 | 0.017 |
-| Learned (train all years) | 100.74 | 2.20 | 0.002 |
+| Learned (train all years) | 100.73 | 2.17 | 0.002 |
 | Classic m=4 | 100.69 | 2.43 | 0.000 |
 
 This is the most interesting table in the repo. The pre 2020 policy earned the most on average and breached more than eight times as often as the all years policy. It never saw a crash, so it learned to be aggressive, and the COVID regime punished exactly that. The all years policy saw crashes in training and behaved. Classic CPPI does not care about regimes: a formula has no memory to overfit. The lesson is not that learning fails. It is that a learned policy is only as worldly as its training data.

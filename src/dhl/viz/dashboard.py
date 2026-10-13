@@ -6,7 +6,7 @@ data, policy-surface grids, wealth-path simulation, and multi-asset
 allocation summaries. It imports no web framework, so it is unit
 tested headless.
 
-The demo policies are deliberately small and train for few epochs.
+The demo policies are small and train for few epochs.
 They illustrate the mechanics; the repo's published numbers come from
 the full experiments in ``dhl.experiments``.
 """

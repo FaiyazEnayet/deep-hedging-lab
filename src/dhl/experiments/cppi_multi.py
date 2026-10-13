@@ -87,16 +87,22 @@ def block_bootstrap_paths_multi(rets, tickers, n_paths, path_len,
 def _trail_features(P, window=21):
     """Trailing mean log return per asset, shape (n_paths, steps, n_assets).
 
-    Expanding window for the first ``window`` steps.
+    Strictly causal: the feature at time ``i`` uses only returns
+    ``lr[:, :i, :]``. The first step has no history yet, so its
+    feature is 0.0.
     """
     n, steps_p1, na = P.shape
     steps = steps_p1 - 1
     lr = torch.log(P[:, 1:, :] / P[:, :-1, :])
     out = torch.empty_like(lr)
     for i in range(steps):
-        j = max(0, i - window + 1)
-        out[:, i, :] = lr[:, j : i + 1, :].mean(dim=1)
-    return torch.nan_to_num(out, nan=0.0)
+        j = max(0, i - window)
+        w = lr[:, j:i, :]
+        if w.shape[1] == 0:
+            out[:, i, :] = 0.0
+        else:
+            out[:, i, :] = w.mean(dim=1)
+    return out
 
 
 class MultiAssetPolicy(nn.Module):
@@ -147,21 +153,12 @@ def rollout_multi(P, weight_fn, floor_mode="fixed", floor=FLOOR,
                   return_path=False):
     """Self-financing multi-asset portfolio under a dynamic allocation.
 
-    Parameters
-    ----------
-    P : torch.Tensor, shape (n_paths, n_steps + 1, n_assets)
-        Price paths, each asset normalized to the same start.
-    weight_fn : callable
-        ``(i, V, tau_frac, cushion, vols_i, trail_i, floor_t)`` returns
-        weights of shape ``(n_paths, n_assets + 1)`` (last = cash),
-        nonnegative and summing to one.
-    floor_mode : "fixed" or "drawdown".
-
-    Returns
-    -------
-    V_T : torch.Tensor, shape (n_paths,).
-    With ``return_path=True`` also returns the wealth path and the
-    floor path, both of shape ``(n_paths, n_steps + 1)``.
+    P has shape (n_paths, n_steps + 1, n_assets), each asset starting
+    at the same price. weight_fn(i, V, tau_frac, cushion, vols_i,
+    trail_i, floor_t) returns (n_paths, n_assets + 1) weights, last
+    column cash, nonnegative and summing to one. Returns terminal
+    wealth per path; with return_path=True also the wealth and floor
+    paths.
     """
     n, steps_p1, na = P.shape
     steps = steps_p1 - 1
