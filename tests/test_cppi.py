@@ -15,6 +15,7 @@ from dhl.experiments.cppi_learned import (
     R,
     V0,
     CPPIPolicy,
+    _vol_features,
     classic_cppi_weight,
     rollout,
     train_cppi_policy,
@@ -135,3 +136,24 @@ def test_training_reduces_objective():
                       lr=5e-3, log_every=0, seed=0)
     after = objective()
     assert after < before, f"objective did not improve: {before} -> {after}"
+
+
+def test_vol_features_are_causal():
+    # Shifting price i+1 must not move any feature at times <= i.
+    torch.manual_seed(0)
+    S = torch.exp(torch.randn(4, 31).cumsum(dim=1) * 0.02)
+    base = _vol_features(S)
+    for i in [0, 5, 15, 29]:
+        bumped = S.clone()
+        bumped[:, i + 1] *= 1.1
+        got = _vol_features(bumped)
+        assert torch.equal(got[:, : i + 1], base[:, : i + 1]), f"leak at i={i}"
+
+
+def test_vol_features_first_step_is_zero():
+    # No history at i=0, so the feature is exactly 0, not a nan cleanup.
+    torch.manual_seed(1)
+    S = torch.exp(torch.randn(3, 21).cumsum(dim=1) * 0.02)
+    vols = _vol_features(S)
+    assert torch.all(vols[:, 0] == 0.0)
+    assert torch.isfinite(vols).all()
