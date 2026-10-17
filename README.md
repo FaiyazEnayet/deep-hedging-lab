@@ -1,17 +1,18 @@
-<p align="center"><img src="docs/readme-banner.svg" alt="Neural-CPPI: Learned allocation under portfolio floor constraints" width="1200"></p>
+<p align="center"><img src="docs/readme-banner.svg?v=type-20261017b" alt="Neural-CPPI: Learned allocation under portfolio floor constraints" width="1200"></p>
 
 [![Tests](https://github.com/FaiyazEnayet/neural-cppi/actions/workflows/ci.yml/badge.svg)](https://github.com/FaiyazEnayet/neural-cppi/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-007EC6)](LICENSE) ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB) ![Built with PyTorch + NumPy](https://img.shields.io/badge/built%20with-PyTorch%20%2B%20NumPy-555555) [![Interactive demo](https://img.shields.io/badge/demo-interactive-4C9D39)](https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html)
 
-<p align="center"><a href="https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html"><b>Open interactive demo</b></a> · <a href="docs/dashboard.html">HTML file</a> · <a href="#method">Method</a> · <a href="#run-locally">Run locally</a> · <a href="#limitations">Limitations</a></p>
+<p align="center"><a href="https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html"><b>Open interactive demo</b></a> · <a href="#method">Method</a> · <a href="#run-locally">Run locally</a></p>
 
 # Neural-CPPI
 
 A research implementation of neural portfolio insurance. It compares learned allocation policies with classical CPPI and makes the trade between terminal wealth and floor protection inspectable.
 
-**Python · PyTorch · portfolio simulation**
 
-[![Neural-CPPI demo](docs/demo.gif?v=data-20261017)](https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html)
+[![Neural-CPPI demo](docs/demo.gif?v=showcase-20261017b)](https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html)
 
+
+The dashboard separates return-seeking behavior from protection outcomes. Read the wealth comparison together with breach frequency, horizon and allocation policy: a stronger average result can still carry undesirable tail risk. The regime summaries provide a second check on whether conclusions depend on a particular return environment.
 
 ## Explore
 
