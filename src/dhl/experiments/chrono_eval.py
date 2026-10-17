@@ -115,7 +115,7 @@ def run_chrono_eval(n_epochs=N_EPOCHS, batch_size=BATCH_SIZE, seed=SEED):
     for m in MULTIPLIERS:
         from dhl.experiments.cppi_learned import classic_cppi_weight
 
-        def _fn(i, V, tau_frac, cushion, vol, _m=m):
+        def _fn(i, V, tau_frac, cushion, feats, _m=m):
             return classic_cppi_weight(V, multiplier=_m, cap=CAP)
 
         strategies[f"classic_m{m}"] = _fn

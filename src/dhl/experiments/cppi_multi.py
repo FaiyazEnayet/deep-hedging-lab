@@ -247,7 +247,11 @@ def _learned_single_weight_fn(policy, cap=1.0):
     inner = _single(policy)
 
     def fn(i, V, tau_frac, cushion, vols_i, trail_i, floor_t):
-        w0 = torch.clamp(inner(i, V, tau_frac, cushion, vols_i[:, 0]), max=cap)
+        # Single-asset policy sees only SPY (asset 0). The feats dict
+        # carries vol; crash-feature policies need the multi rollout
+        # to supply the full feature set (not yet wired here).
+        feats = {"vol": vols_i[:, 0]}
+        w0 = torch.clamp(inner(i, V, tau_frac, cushion, feats), max=cap)
         na = vols_i.shape[1]
         w = torch.zeros(V.shape[0], na + 1, device=V.device, dtype=V.dtype)
         w[:, 0] = w0

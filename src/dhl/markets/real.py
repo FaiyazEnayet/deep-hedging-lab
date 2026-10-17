@@ -25,6 +25,13 @@ YAHOO_CHART_URL = (
     "?period1=1420070400&period2=9999999999&interval=1d"
 )
 
+# 2007-01-01 UTC: start of the extended history covering the 2008 crisis.
+# Training on 2008 gives the policy a true crash regime without touching
+# the post-2020 held-out test sets.
+YAHOO_PERIOD1_2007 = 1167609600
+
+VIX_TICKER = "^VIX"
+
 DATA_DIR = os.path.join(
     os.path.dirname(__file__), "..", "..", "..", "data"
 )
@@ -56,15 +63,21 @@ def fetch_spy_daily_yahoo(data_dir=DATA_DIR):
     return fetch_ticker_daily_yahoo("SPY", data_dir=data_dir)
 
 
-def fetch_ticker_daily_yahoo(ticker, data_dir=DATA_DIR):
+def fetch_ticker_daily_yahoo(ticker, data_dir=DATA_DIR, period1=None):
     """Download daily bars for any Yahoo ticker, saved as CSV parts.
 
     Writes ``{ticker}_daily_2015.csv`` and ``{ticker}_daily_2021.csv``
     (lowercase ticker), split in half like the SPY parts. No API key.
+
+    Pass ``period1`` (unix timestamp) to override the default 2015+
+    start date, e.g. ``YAHOO_PERIOD1_2007`` for full crisis history.
     """
     t = ticker.upper()
+    url = YAHOO_CHART_URL.replace("/SPY?", f"/{t}?")
+    if period1 is not None:
+        url = url.replace("period1=1420070400", f"period1={int(period1)}")
     req = urllib.request.Request(
-        YAHOO_CHART_URL.replace("/SPY?", f"/{t}?"),
+        url,
         headers={"User-Agent": "Mozilla/5.0 (compatible; neural-cppi)"},
     )
     with urllib.request.urlopen(req, timeout=60) as resp:

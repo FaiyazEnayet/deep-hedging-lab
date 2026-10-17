@@ -30,7 +30,7 @@ def _prices(start, rets):
 
 
 def _const_weight(w):
-    def fn(i, V, tau_frac, cushion, vol):
+    def fn(i, V, tau_frac, cushion, feats):
         return torch.full_like(V, w)
 
     return fn
@@ -56,7 +56,7 @@ def test_classic_cppi_never_breaches_on_rising_path():
     S = torch.as_tensor(_prices(100.0, [0.008] * 30), dtype=torch.float32)
     seen = []
 
-    def fn(i, V, tau_frac, cushion, vol):
+    def fn(i, V, tau_frac, cushion, feats):
         w = classic_cppi_weight(V, multiplier=4.0)
         seen.append(w.clone())
         return w
@@ -75,7 +75,7 @@ def test_classic_cppi_derisks_after_breach():
     S = torch.as_tensor(_prices(100.0, rets), dtype=torch.float32)
     seen = []
 
-    def fn(i, V, tau_frac, cushion, vol):
+    def fn(i, V, tau_frac, cushion, feats):
         w = classic_cppi_weight(V, multiplier=4.0)
         seen.append(w.clone())
         return w
@@ -100,8 +100,8 @@ def test_policy_output_bounds():
     policy = CPPIPolicy()
     tau = torch.rand(64)
     cushion = torch.rand(64) * 2 - 1
-    vol = torch.rand(64) * 0.5
-    w = policy(tau, cushion, vol)
+    feats = {"vol": torch.rand(64) * 0.5}
+    w = policy(tau, cushion, feats)
     assert w.shape == (64,)
     assert bool(((w >= 0) & (w <= CAP)).all())
 
