@@ -10,9 +10,8 @@ A research implementation of neural portfolio insurance. It compares learned all
 
 **Python · PyTorch · portfolio simulation**
 
-[![Recorded tour of the Neural-CPPI dashboard](docs/demo.gif)](https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html)
+[![Neural-CPPI demo](docs/demo.gif)](https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html)
 
-*The GIF is a recorded tour of the actual dashboard. Click it for the interactive HTML. The prebuilt HTML opens locally without an application server.*
 
 ## Explore
 
@@ -34,7 +33,6 @@ Historical daily returns generate block-bootstrap scenarios. A neural policy lea
 
 ## Run locally
 
-Start with the prebuilt [HTML file](docs/dashboard.html) for a dependency-free review. To run the source:
 
 ```sh
 python -m pip install -e ".[dev]"
@@ -45,11 +43,31 @@ python -m dhl.experiments.cppi_multi
 python scripts/make_dashboard.py
 ```
 
+## Technical design
+
+The single-asset policy uses time remaining, cushion and volatility to choose risky exposure. The multi-asset version uses long-only portfolio weights and a drawdown-sensitive floor. A safety layer can cap total risky exposure while the learned policy chooses the asset mix. These are distinct experimental variants, so their results should not be combined into one headline return.
+
+```mermaid
+flowchart LR
+  N0["Historical daily bars"] --> N1["Block bootstrap"]
+  N1["Block bootstrap"] --> N2["Learned allocation"]
+  N1["Block bootstrap"] --> N3["Classical CPPI"]
+  N2["Learned allocation"] --> N4["Risk and return evaluation"]
+  N3["Classical CPPI"] --> N4["Risk and return evaluation"]
+```
+
+## Evaluation protocol
+
+The committed dashboard contains separate synthetic experiments, a historical-return bootstrap explorer and historical regime summaries. The bootstrap bands describe resampled scenarios, not a realized investment track record. Floor-breach rates must be read with the horizon, path count, transaction-cost assumptions and exact floor definition.
+
+![Terminal wealth in the 63-day synthetic experiment](docs/results.png)
+
+The illustrated 63-day experiment improves mean wealth over the classical policies while accepting some terminal-floor breaches. That is an observed tradeoff. It does not establish that the learned policy dominates CPPI in every market.
+
 ## Code and data
 
 `src/dhl/` contains the policies, market samplers, risk calculations and experiments. `data/` contains the committed daily market observations. `scripts/make_dashboard.py` builds the HTML output.
 
-The dashboard preserves source outputs. Rebuilding research results can require additional data or compute; opening the supplied HTML does not.
 
 ## Limitations
 
