@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.2.0] - 2026-10-17
+### Added
+- Chronological out-of-time evaluation: strict train (pre-2020) / validate (2021-2022) / test (2023+) splits with contiguous real-history paths, COVID crash stress set, and paired strategy comparison on identical paths.
+- Crash-robustness upgrade: 2008 crisis training data, crash-regime features (volatility ratio, drawdown, panic indicator, lagged VIX), crash-weighted breach penalty, and a CPPI-constrained allocator where the network picks assets and a classical risk layer caps total exposure.
+- Full ablation study (A-G plus leave-one-out) proving each component's contribution.
+
+### Results
+- COVID crash (held out of training): breach rate 24% → 0%, terminal wealth 97.03 → 98.37, beating classic CPPI (96.59).
+- 2008 training data alone was the biggest single improvement.
+
+### Tests
+- 78 passing (was 52), including causality regression tests for all new features.
+
 ## [v1.1.0] - 2026-10-16
 
 ### Fixed
