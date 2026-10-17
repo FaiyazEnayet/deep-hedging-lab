@@ -118,7 +118,7 @@ Numbers move with seeds. Rerun it and check my work.
 | Learned single (SPY) | 101.56 | 2.97 | 0.003 |
 | Classic m=4 (mix) | 100.97 | 2.11 | 0.000 |
 
-Diversification helps the learner: more return at both horizons, at higher volatility. Classic never breaches. Same trade as before, now across assets.
+Diversification helps the learner: more return at both horizons, at higher volatility. Classic CPPI showed no breaches in these tests, though gap risk means no daily-rebalanced strategy can guarantee that in general. Same trade as before, now across assets.
 
 ### Drawdown floor
 

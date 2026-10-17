@@ -124,10 +124,22 @@ def policy_weight_grid(policy, n_cushion=41, n_time=25):
     vol_fixed = _median_vol()
     with torch.no_grad():
         T, C = np.meshgrid(taus, cushions)
+        n_grid = T.size
+        feats = {
+            "vol": torch.full((n_grid,), vol_fixed, dtype=torch.float32),
+            # Crash features at neutral values: vol_ratio 1 (no accel),
+            # zero drawdown, zero panic z-score.
+            "vol_ratio": torch.ones(n_grid, dtype=torch.float32),
+            "drawdown": torch.zeros(n_grid, dtype=torch.float32),
+            "panic_z": torch.zeros(n_grid, dtype=torch.float32),
+        }
+        # Only pass the features this policy was built with.
+        feats = {k: v for k, v in feats.items()
+                 if k in policy.feature_names}
         w = policy(
             torch.as_tensor(T.ravel(), dtype=torch.float32),
             torch.as_tensor(C.ravel(), dtype=torch.float32),
-            torch.full((T.size,), vol_fixed, dtype=torch.float32),
+            feats,
         )
     return {
         "cushions": cushions,
@@ -138,7 +150,7 @@ def policy_weight_grid(policy, n_cushion=41, n_time=25):
 
 
 def _classic_fn(floor, multiplier):
-    def fn(i, V, tau_frac, cushion, vol):
+    def fn(i, V, tau_frac, cushion, feats):
         return classic_cppi_weight(V, floor=floor, multiplier=multiplier,
                                    cap=CAP)
 

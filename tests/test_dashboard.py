@@ -14,7 +14,8 @@ def test_train_demo_policy_runs():
     pol = D.train_demo_policy(n_epochs=2, batch_size=64, horizon_days=10,
                               seed=0)
     torch.manual_seed(0)
-    w = pol(torch.rand(16), torch.rand(16), torch.rand(16) * 0.3)
+    feats = {"vol": torch.rand(16) * 0.3}
+    w = pol(torch.rand(16), torch.rand(16), feats)
     assert w.shape == (16,)
     assert bool(((w >= 0) & (w <= 1)).all())  # long-only, cap 1.0
 
