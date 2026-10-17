@@ -32,6 +32,10 @@ Historical daily returns generate block-bootstrap scenarios. A neural policy lea
 | Same experiment | Terminal wealth standard deviation 3.63; observed terminal-floor breaches 0.3% |
 | Interpretation | Finite-sample outcomes, not a capital-protection guarantee |
 
+## Updating this project
+
+Dashboard source language: **Python**. Generator: `scripts/make_dashboard.py`. To keep the interactive page, figures, data animation, and README consistent, follow [the coding-agent update guide](AGENT-DASHBOARD-GUIDE.md). The local interactive output is `docs/dashboard.html`.
+
 ## Run locally
 
 
