@@ -308,8 +308,8 @@ def build(out_path, fast=False):
     )
     html = PAGE.format(results=res_divs, **divs)
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
-    with open(out_path, "w") as fh:
-        fh.write(html)
+    with open(out_path, "w", encoding="utf-8") as fh:
+        fh.write(_portfolio_html(html))
     print(f"wrote {out_path} ({os.path.getsize(out_path) / 1e6:.1f} MB)",
           flush=True)
 
@@ -321,6 +321,16 @@ def main():
     args = ap.parse_args()
     build(args.out, fast=args.fast)
 
+
+
+def _portfolio_html(raw):
+    """Presentation-only transform of this run’s freshly calculated figures."""
+    import sys
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(root / "portfolio_ui"))
+    from renderer import render_html
+    return render_html(root, 'neural-cppi', raw)[0]
 
 if __name__ == "__main__":
     main()
