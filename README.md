@@ -10,7 +10,7 @@ A research implementation of neural portfolio insurance. It compares learned all
 
 **Python · PyTorch · portfolio simulation**
 
-[![Neural-CPPI demo](docs/demo.gif)](https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html)
+[![Neural-CPPI demo](docs/demo.gif?v=data-20261017)](https://faiyazenayet.github.io/neural-cppi/docs/dashboard.html)
 
 
 ## Explore
