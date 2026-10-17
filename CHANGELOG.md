@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [v1.1.0] - 2026-10-16
 
 ### Fixed
 - Look-ahead leakage in the decision-time features (`_vol_features` in `src/dhl/experiments/cppi_learned.py`, `_trail_features` in `src/dhl/experiments/cppi_multi.py`). Both builders included the return from price `i` to price `i+1` in the feature vector used to choose the allocation at time `i`. They now use strictly past returns only, and the empty first-step window yields exactly `0.0`. Added regression tests pinning temporal causality (perturbing price `i+1` leaves features at times `<= i` unchanged) and the exact-zero first step.
