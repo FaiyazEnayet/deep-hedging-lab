@@ -1,3 +1,5 @@
 # Dashboard presentation layer
 
-Install requirements.txt before running the repository dashboard generator. The original-dashboard-snapshot.html preserves committed chart data for a presentation-only rebuild when training or export inputs are unavailable. Research calculations remain in the original generator.
+Install requirements.txt before running the dashboard generator. The original-dashboard-snapshot.html preserves committed chart arrays for a presentation-only rebuild. Research calculations remain in the original generator.
+
+For the data animation, install requirements-gif.txt and run scripts/make_portfolio_gif.py from the repository root. animation-data.json contains faithful source chart arrays; the Freefood-Radar animation reads its separately refreshed public snapshot.
