@@ -145,6 +145,22 @@ I trained the single asset learner on pre 2020 paths only, then evaluated on 202
 
 This is the most interesting table in the repo. The pre 2020 policy earned the most on average and breached more than eight times as often as the all years policy. It never saw a crash, so it learned to be aggressive, and the COVID regime punished exactly that. The all years policy saw crashes in training and behaved. Classic CPPI does not care about regimes: a formula has no memory to overfit. The lesson is not that learning fails. It is that a learned policy is only as worldly as its training data.
 
+### Crash robustness
+
+That lesson became v1.2.0. I extended training back to 2007 so the network sees the 2008 crisis, added crash-regime features (volatility acceleration, trailing drawdown, a panic indicator, lagged VIX), weighted crash-period breaches more heavily in training, and put a CPPI safety layer under the network: the AI picks the asset mix, classical math caps how much total risk it can take based on the cushion above the floor.
+
+Tested on the COVID crash, held out of training entirely:
+
+| Strategy | E[wealth] | P(breach) |
+|---|---|---|
+| Original learned | 97.03 | 0.238 |
+| + 2008 training data | 98.65 | 0.000 |
+| + CPPI safety layer | 98.18 | 0.000 |
+| All combined | 98.37 | 0.000 |
+| Classic CPPI | 96.59 | 0.000 |
+
+The 2008 data alone did most of the work: breaches went from 24% to zero and wealth went up. The full model beats classic CPPI by 1.78 with zero breaches. An ablation study (in `src/dhl/experiments/crash_ablation.py`) confirms each piece earns its place. Full numbers in the changelog.
+
 ## Where I would take it next
 
 * Regime aware features: credit spreads, term structure slope
